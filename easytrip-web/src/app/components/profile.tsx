@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FaUser, FaEnvelope, FaCalendarAlt, FaSitemap, FaMapMarkerAlt, FaMars } from "react-icons/fa";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
 
@@ -72,7 +71,7 @@ export default function ProfilePage() {
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
 
-      router.push("/"); // redirect home
+      router.push("/");
     } catch (err) {
       alert("Logout failed. Try again.");
     } finally {
@@ -93,53 +92,59 @@ export default function ProfilePage() {
   if (error) return <p className="p-4 text-red-500">Error: {error}</p>;
 
   return (
-    <div className="max-w-4xl mx-auto mt-10 bg-green-50 rounded-xl shadow-lg overflow-hidden">
-      <div className="p-6 border-b border-green-100">
-        <h2 className="text-2xl font-semibold text-green-800">Account Information</h2>
-      </div>
-      <div className="flex flex-col md:flex-row p-6 gap-8">
-        {/* Profile photo */}
-        <div className="flex flex-col items-center gap-2">
-          <img
-            src="/avatar.png" // заміни або додай власне зображення
-            alt="Profile"
-            className="w-28 h-28 rounded-full object-cover border-2 border-green-400"
-          />
-          <p className="text-lg font-semibold text-green-800">Avatar</p>
-          <p className="text-sm text-gray-500 text-center">This will be displayed on your profile.</p>
-        </div>
+    <div className="relative min-h-screen">
+      <div className="absolute inset-0 bg-gradient-to-br from-green-300 to-white z-0" />
 
-        {/* Profile fields */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-          <Field icon={<FaUser />} label="Username" value={profile.username} />
-          <Field icon={<FaEnvelope />} label="Email Address" value={profile.email} />
-          <Field icon={<FaUser />} label="First Name" value={profile.first_name} />
-          <Field icon={<FaUser />} label="Last Name" value={profile.last_name} />
-          <Field icon={<FaCalendarAlt />} label="Date of Birth" value={profile.date_of_birth} />
-          <Field icon={<FaMapMarkerAlt />} label="Joined" value={new Date(profile.date_joined).toLocaleDateString()} />
-        </div>
-      </div>
+      <div className="relative z-10 flex items-center justify-center min-h-screen p-8">
+        <div className="flex flex-col md:flex-row gap-10 w-full max-w-5xl items-start justify-center">
+          {/* Аватар зліва */}
+          <div className="flex flex-col items-center gap-4">
+            <img
+              src="/avatar.png"
+              alt="Profile"
+              className="w-44 h-44 rounded-full object-cover border-4 border-white shadow-lg"
+            />
+            <button className="text-sm text hover:underline">Change</button>
+          </div>
 
-      <div className="p-6 border-t border-green-100 flex justify-end">
-        <button
-          onClick={handleLogout}
-          disabled={logoutLoading}
-          className="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-2 rounded-md transition"
-        >
-          {logoutLoading ? "Logging out..." : "Logout"}
-        </button>
+          {/* Інформація справа */}
+          <div className="flex flex-col w-full max-w-xl gap-4">
+            <Field label="Username" value={profile.username} />
+            <Field label="Email" value={profile.email} />
+            <Field label="First Name" value={profile.first_name} />
+            <Field label="Last Name" value={profile.last_name} />
+            <Field label="Date of Birth" value={profile.date_of_birth} />
+            <Field label="Joined" value={new Date(profile.date_joined).toLocaleDateString()} />
+
+            <div className="w-full flex justify-end mt-4">
+              <button
+                onClick={handleLogout}
+                disabled={logoutLoading}
+                className="bg-green-600 hover:bg-green-700 text-white font-semibold px-8 py-2 rounded-md transition"
+              >
+                {logoutLoading ? "Logging out..." : "Logout"}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-function Field({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+// Компонент поля
+function Field({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
   return (
-    <div>
-      <p className="text-sm text-gray-500 mb-1">{label}</p>
-      <div className="flex items-center gap-2 bg-green-100 px-3 py-2 rounded-md text-green-900">
-        <span className="text-green-700">{icon}</span>
-        <span>{value}</span>
+    <div className="flex flex-col w-full">
+      <label className="text-sm text-gray-600 mb-1">{label}</label>
+      <div className="bg-green-100 text-green-900 px-4 py-2 rounded-md font-medium">
+        {value}
       </div>
     </div>
   );
