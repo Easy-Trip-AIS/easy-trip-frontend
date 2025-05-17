@@ -43,7 +43,6 @@ export default function SignUpPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Client-side checks
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const isEmailValid = emailRegex.test(formData.email);
     const isPasswordMatch = formData.password === formData.passwordConfirmation;
@@ -59,7 +58,6 @@ export default function SignUpPage() {
 
     setErrors({ passwordMismatch: false, invalidEmail: false, server: null });
 
-    // Build payload for Django
     const payload = {
       username: formData.username,
       email: formData.email,
@@ -78,14 +76,11 @@ export default function SignUpPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        // Show any validation errors from the server
         setErrors((prev) => ({ ...prev, server: data }));
       } else {
-        // Success → redirect to login
-        router.push("/login");
+        router.push("/");
       }
     } catch {
-      // Network or other unexpected error
       setErrors((prev) => ({
         ...prev,
         server: { detail: "Network error, please try again." },
@@ -98,7 +93,6 @@ export default function SignUpPage() {
       <div className="absolute inset-0 bg-gradient-to-br from-green-300 to-white z-0" />
 
       <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 p-8 gap-4 min-h-screen">
-        {/* Left block */}
         <div className="p-10 flex flex-col justify-between text-white h-full">
           <div className="flex flex-col items-start justify-center h-full text-left">
             <h2 className="text-6xl font-bold mb-4 text-black">
@@ -134,7 +128,7 @@ export default function SignUpPage() {
             </div>
             <div className="flex gap-4 text-sm">
               <a
-                href="#"
+                href="/"
                 className="text-black font-medium hover:underline"
               >
                 Home
@@ -149,7 +143,6 @@ export default function SignUpPage() {
           </div>
         </div>
 
-        {/* Right block – the form */}
         <div className="bg-gray-100 rounded-xl shadow-lg w-full max-w-[700px] p-8 overflow-auto">
           <h2 className="text-2xl font-bold mb-1">Create a new Account</h2>
           <p className="text-sm text-gray-400 mb-6">
@@ -311,7 +304,7 @@ export default function SignUpPage() {
 
             <p className="text-sm text-center mt-4">
               Already have an account?{" "}
-              <a href="/login" className="text-green-600 hover:underline">
+              <a href="/sign-in" className="text-green-600 hover:underline">
                 Sign In
               </a>
             </p>
