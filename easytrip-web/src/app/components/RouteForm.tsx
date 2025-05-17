@@ -25,6 +25,7 @@ export default function RouteForm({
 }) {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [transport, setTransport] = useState("car");
   const [freeTime, setFreeTime] = useState(120);
   const [filters, setFilters] = useState<Filters>({
     culture: 30,
@@ -36,29 +37,47 @@ export default function RouteForm({
     entertaiment: 5,
   });
 
-  const handleSubmit = () => {
-    // ТИМЧАСОВІ координати — замінити пізніше на геокодування
-    const start_location = { lat: 49.827787, lng: 24.0021997 };
-    const end_location = { lat: 49.8413276, lng: 24.0315923 };
+  const geocodeAddress = async (address: string) => {
+    const url = `/api/geocode?address=${encodeURIComponent(address)}`;
+    console.log("Geocoding address:", url);
 
-    const preferences = Object.fromEntries(
-      Object.entries(filters).map(([key, value]) => [key, value / 100])
-    );
+    const res = await fetch(url);
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("Geocode error:", errorText);
+      throw new Error("Геокодування не вдалося");
+    }
+    return await res.json();
+  };
 
-    const payload = {
-      start_location,
-      end_location,
-      preferences,
-      transport: "car",
-      free_time_minutes: freeTime,
-    };
+  const handleSubmit = async () => {
+    try {
+      const start_location = await geocodeAddress(from);
+      const end_location = await geocodeAddress(to);
 
-    onSubmit(payload);
+      const preferences = Object.fromEntries(
+        Object.entries(filters).map(([key, value]) => [key, value / 100])
+      );
+
+      const payload = {
+        start_location,
+        end_location,
+        preferences,
+        transport,
+        free_time_minutes: freeTime,
+      };
+
+      onSubmit(payload);
+    } catch (err) {
+      console.log("API key from env:", process.env.GOOGLE_MAPS_API_KEY); // тимчасово для перевірки
+
+      console.error("Помилка при геокодуванні. Перевірте введені адреси.");
+      alert("Не вдалося знайти одну з адрес. Перевірте введення.");
+    }
   };
 
   return (
     <div className="space-y-6">
-      {/* Локації */}
       <div className="space-y-4">
         <input
           type="text"
@@ -76,7 +95,19 @@ export default function RouteForm({
         />
       </div>
 
-      {/* Фільтри */}
+      <div>
+        <label className="block font-medium">Транспорт</label>
+        <select
+          value={transport}
+          onChange={(e) => setTransport(e.target.value)}
+          className="w-full p-2 rounded border border-gray-300"
+        >
+          <option value="walking">Пішки</option>
+          <option value="bicycle">Велосипед</option>
+          <option value="car">Авто</option>
+        </select>
+      </div>
+
       <div className="space-y-4">
         {Object.keys(filters).map((key) => (
           <div key={key}>
@@ -95,7 +126,6 @@ export default function RouteForm({
         ))}
       </div>
 
-      {/* Вільний час */}
       <div>
         <label className="block font-medium">Вільний час (хвилин)</label>
         <input
@@ -109,7 +139,6 @@ export default function RouteForm({
         />
       </div>
 
-      {/* Кнопка */}
       <button
         onClick={handleSubmit}
         className="w-full mt-4 p-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
