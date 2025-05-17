@@ -4,17 +4,11 @@ import { useState } from "react";
 import RouteForm from "../components/RouteForm";
 import MapView from "../components/MapView";
 
-type RecommendedPoint = {
-  name: string;
-  lat: number;
-  lng: number;
-  description?: string;
-};
-
 export default function MapPage() {
-  const [waypoints, setWaypoints] = useState<google.maps.DirectionsWaypoint[]>([]);
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
-  const [points, setPoints] = useState<RecommendedPoint[]>([]); // для відображення маркерів
+  const [points, setPoints] = useState<
+    { name: string; lat: number; lng: number; description: string }[]
+  >([]);
 
   const handleGenerate = async (payload: {
     start_location: { lat: number; lng: number };
@@ -24,47 +18,64 @@ export default function MapPage() {
     free_time_minutes: number;
   }) => {
     try {
-      const response = await fetch("/ml/recommend", {
+      console.log("📤 Надсилаємо запит на /ml/recommend з payload:", payload);
+
+      const res = await fetch("/ml/recommend", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(`Помилка сервера: ${text}`);
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("❌ Сервер повернув помилку:", text);
+        return;
       }
 
-      const result = await response.json();
-      const recommended = result.recommended as RecommendedPoint[];
+      const data = await res.json();
+      console.log("✅ Отримано рекомендовані точки:", data);
 
-      setPoints(recommended); // для маркерів
+      if (!data.recommended || data.recommended.length < 2) {
+        console.warn("⚠️ Недостатньо точок для побудови маршруту");
+        return;
+      }
+
+      setPoints(data.recommended); // Передаємо точки в MapView
 
       const directionsService = new google.maps.DirectionsService();
 
-      const routeWaypoints = recommended.map((point) => ({
-        location: { lat: point.lat, lng: point.lng },
+      const waypoints = data.recommended.slice(1, -1).map((p: any) => ({
+        location: { lat: p.lat, lng: p.lng },
         stopover: true,
       }));
 
+      console.log("📍 Будуємо маршрут через точки:", {
+        origin: data.recommended[0],
+        destination: data.recommended[data.recommended.length - 1],
+        waypoints,
+      });
+
       directionsService.route(
         {
-          origin: payload.start_location,
-          destination: payload.end_location,
-          waypoints: routeWaypoints,
+          origin: { lat: data.recommended[0].lat, lng: data.recommended[0].lng },
+          destination: {
+            lat: data.recommended[data.recommended.length - 1].lat,
+            lng: data.recommended[data.recommended.length - 1].lng,
+          },
+          waypoints: waypoints,
           travelMode: google.maps.TravelMode.DRIVING,
         },
         (result, status) => {
           if (status === google.maps.DirectionsStatus.OK && result) {
+            console.log("✅ Маршрут побудовано успішно");
             setDirections(result);
-            setWaypoints(routeWaypoints);
           } else {
-            console.error("Помилка побудови маршруту:", status);
+            console.error("❌ Помилка побудови маршруту:", status, result);
           }
         }
       );
     } catch (err) {
-      console.error("Помилка генерації маршруту:", err);
+      console.error("💥 Помилка при генерації маршруту:", err);
     }
   };
 
