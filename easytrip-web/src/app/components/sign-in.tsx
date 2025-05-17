@@ -59,7 +59,7 @@ export default function SignInPage() {
           window.location.href = "/"; 
         }
       } catch (error) {
-        setLoginError("Network error. Please try again later.");
+        setLoginError("Error");
       } finally {
         setLoading(false);
       }
