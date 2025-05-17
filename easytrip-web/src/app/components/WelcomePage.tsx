@@ -20,7 +20,7 @@ export default function WelcomePage() {
         <p className="text-lg md:text-xl text-gray-700 mb-8">
           Створіть персоналізований маршрут з точки A в точку B з урахуванням вашого вільного часу та вподобань. Відкрийте нові цікаві місця на своєму шляху.
         </p>
-        <Link href="/create-route">
+        <Link href="/map">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
