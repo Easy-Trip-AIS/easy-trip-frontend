@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
+
 export default function SignInPage() {
   const [formData, setFormData] = useState({
     username: "",
@@ -13,15 +15,19 @@ export default function SignInPage() {
     emptyPassword: false,
   });
 
+  const [loading, setLoading] = useState(false);
+  const [loginError, setLoginError] = useState("");
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
+    setLoginError(""); 
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const { username, password } = formData;
@@ -33,20 +39,38 @@ export default function SignInPage() {
     setErrors(hasErrors);
 
     if (!hasErrors.emptyUsername && !hasErrors.emptyPassword) {
-      console.log("Form submitted:", formData);
-      // Тут можна викликати API або редирект
+      setLoading(true);
+      try {
+        const response = await fetch(`${API_URL}/login/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username, password }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          setLoginError(data?.detail || "Login failed. Try again.");
+        } else {
+          localStorage.setItem("access_token", data.access);
+          localStorage.setItem("refresh_token", data.refresh);
+          window.location.href = "/"; 
+        }
+      } catch (error) {
+        setLoginError("Network error. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
   return (
     <div className="relative min-h-screen">
-      {/* Фоновий градієнт */}
       <div className="absolute inset-0 bg-gradient-to-br from-green-300 to-white z-0"></div>
 
-      {/* Основний контент: 2 колонки */}
       <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-4 min-h-screen place-items-center p-8">
-        
-        {/* Ліва частина */}
         <div className="flex flex-col justify-between h-full text-left text-black p-10">
           <div className="flex flex-col justify-center h-full">
             <h2 className="text-6xl font-bold mb-4">Plan inspiring walks</h2>
@@ -55,7 +79,6 @@ export default function SignInPage() {
               Our service will help you pave the way where every step is a pleasure.
             </p>
           </div>
-
           <div className="flex items-center justify-between mt-10">
             <div className="flex items-center gap-2">
               <img src="/english.png" alt="English" className="w-6 h-6 rounded-full" />
@@ -65,13 +88,12 @@ export default function SignInPage() {
               </svg>
             </div>
             <div className="flex gap-4 text-sm">
-              <a href="#" className="text-black font-medium hover:underline">Home</a>
+              <a href="/" className="text-black font-medium hover:underline">Home</a>
               <a href="#" className="text-black font-medium hover:underline">Terms</a>
             </div>
           </div>
         </div>
 
-        {/* Права частина - Форма */}
         <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-8">
           <h2 className="text-2xl font-bold mb-1">Sign in</h2>
           <p className="text-sm text-gray-400 mb-6">Please fill in your details</p>
@@ -106,16 +128,23 @@ export default function SignInPage() {
               )}
             </div>
 
+            {loginError && (
+              <p className="text-red-500 text-sm">{loginError}</p>
+            )}
+
             <button
               type="submit"
-              className="w-full bg-green-400 text-white py-2 rounded-lg font-semibold hover:bg-green-600 transition"
+              className={`w-full ${
+                loading ? "bg-gray-400" : "bg-green-400 hover:bg-green-600"
+              } text-white py-2 rounded-lg font-semibold transition`}
+              disabled={loading}
             >
-              Sign In
+              {loading ? "Signing in..." : "Sign In"}
             </button>
 
             <p className="text-sm text-center mt-4">
               Don't have an account?{" "}
-              <a href="#" className="text-green-600 hover:underline">Sign Up</a>
+              <a href="/sign-up" className="text-green-600 hover:underline">Sign Up</a>
             </p>
           </form>
         </div>
