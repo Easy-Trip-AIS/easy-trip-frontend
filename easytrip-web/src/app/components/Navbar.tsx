@@ -5,12 +5,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import Logo from "./Logo";
 import { TiThMenu } from "react-icons/ti";
 import Media from "react-responsive";
+import Link from "next/link";
 
 export default function Navbar() {
   const [navOpen, setNavOpen] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const handleResize = () => {
         if (window.innerWidth > 800) {
           setNavOpen(false);
@@ -37,9 +38,9 @@ export default function Navbar() {
                     transition={{ duration: 0.3 }}
                     className="flex space-x-8 ml-6"
                   >
-                    <NavButton text="Допомога" />
-                    <NavButton text="Партнерам" />
-                    <NavButton text="Аккаунт" />
+                    <NavButton text="Допомога" href="/help" />
+                    <NavButton text="Партнерам" href="/partners" />
+                    <NavButton text="Аккаунт" href="/profile" />
                   </motion.div>
                 ) : (
                   <motion.div
@@ -71,9 +72,9 @@ export default function Navbar() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5 }}
               >
-                <NavButton text="Допомога" />
-                <NavButton text="Партнерам" />
-                <NavButton text="Аккакунт" />
+                <NavButton text="Допомога" href="/help" />
+                <NavButton text="Партнерам" href="/partners" />
+                <NavButton text="Аккаунт" href="/profile" />
               </motion.div>
             </>
           )
@@ -83,15 +84,17 @@ export default function Navbar() {
   );
 }
 
-function NavButton({ text }: { text: string }) {
+function NavButton({ text, href }: { text: string; href: string }) {
   return (
-    <motion.button
-      whileHover={{ scale: 1.1 }}
-      whileTap={{ scale: 0.95 }}
-      className="relative group text-lg font-medium hover:text-indigo-500 transition-colors duration-300"
-    >
-      <span className="z-10">{text}</span>
-      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-indigo-500 group-hover:w-full transition-all duration-300"></span>
-    </motion.button>
+    <Link href={href}>
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+        className="relative group text-lg font-medium hover:text-indigo-500 transition-colors duration-300"
+      >
+        <span className="z-10">{text}</span>
+        <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-indigo-500 group-hover:w-full transition-all duration-300"></span>
+      </motion.button>
+    </Link>
   );
 }
