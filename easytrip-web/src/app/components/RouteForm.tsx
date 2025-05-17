@@ -9,7 +9,7 @@ type Filters = {
   shopping: number;
   relaxation: number;
   spiritual: number;
-  entertainment: number; // ✅ виправлено!
+  entertainment: number; 
 };
 
 export default function RouteForm() {
@@ -71,7 +71,7 @@ export default function RouteForm() {
 
       console.log(JSON.stringify(payload, null, 2));
 
-      const response = await fetch("/api/route", {
+      const response = await fetch("/ml/recommend", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -88,7 +88,7 @@ export default function RouteForm() {
       console.log("Отримано маршрут:", result);
       alert("Маршрут згенеровано успішно!");
     } catch (err) {
-      console.error("🚨 Помилка:", err);
+      console.error("Помилка:", err);
       alert("Не вдалося побудувати маршрут. Перевірте введення.");
     }
   };
@@ -119,7 +119,7 @@ export default function RouteForm() {
           onChange={(e) => setTransport(e.target.value)}
           className="w-full p-2 rounded border border-gray-300"
         >
-          <option value="walking">Пішки</option>
+          <option value="walk">Пішки</option>
           <option value="bicycle">Велосипед</option>
           <option value="car">Авто</option>
         </select>
