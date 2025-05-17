@@ -9,45 +9,47 @@ type Filters = {
   shopping: number;
   relaxation: number;
   spiritual: number;
-  entertaiment: number;
+  entertainment: number; // ✅ виправлено!
 };
 
-export default function RouteForm({
-  onSubmit,
-}: {
-  onSubmit: (payload: {
-    start_location: { lat: number; lng: number };
-    end_location: { lat: number; lng: number };
-    preferences: Record<string, number>;
-    transport: string;
-    free_time_minutes: number;
-  }) => void;
-}) {
+export default function RouteForm() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [transport, setTransport] = useState("car");
-  const [freeTime, setFreeTime] = useState(120);
+  const [freeTime, setFreeTime] = useState(10); 
   const [filters, setFilters] = useState<Filters>({
-    culture: 30,
-    nature: 30,
-    food: 10,
-    shopping: 10,
-    relaxation: 10,
-    spiritual: 5,
-    entertaiment: 5,
+    culture: 50,
+    nature: 50,
+    food: 50,
+    shopping: 50,
+    relaxation: 50,
+    spiritual: 50,
+    entertainment: 50, 
   });
 
   const geocodeAddress = async (address: string) => {
-    const url = `/api/geocode?address=${encodeURIComponent(address)}`;
-    console.log("Geocoding address:", url);
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
 
-    const res = await fetch(url);
+    const res = await fetch(url, {
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "EasyTripApp/1.0 (youremail@example.com)",
+      },
+    });
+
     if (!res.ok) {
-      const errorText = await res.text();
-      console.error("Geocode error:", errorText);
       throw new Error("Геокодування не вдалося");
     }
-    return await res.json();
+
+    const data = await res.json();
+    if (!data || data.length === 0) {
+      throw new Error("Не знайдено координат за цією адресою");
+    }
+
+    return {
+      lat: parseFloat(data[0].lat),
+      lng: parseFloat(data[0].lon),
+    };
   };
 
   const handleSubmit = async () => {
@@ -67,12 +69,27 @@ export default function RouteForm({
         free_time_minutes: freeTime,
       };
 
-      onSubmit(payload);
-    } catch (err) {
-      console.log("API key from env:", process.env.GOOGLE_MAPS_API_KEY); // тимчасово для перевірки
+      console.log(JSON.stringify(payload, null, 2));
 
-      console.error("Помилка при геокодуванні. Перевірте введені адреси.");
-      alert("Не вдалося знайти одну з адрес. Перевірте введення.");
+      const response = await fetch("/api/route", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Помилка з боку сервера: ${text}`);
+      }
+
+      const result = await response.json();
+      console.log("Отримано маршрут:", result);
+      alert("Маршрут згенеровано успішно!");
+    } catch (err) {
+      console.error("🚨 Помилка:", err);
+      alert("Не вдалося побудувати маршрут. Перевірте введення.");
     }
   };
 
@@ -84,19 +101,19 @@ export default function RouteForm({
           placeholder="Звідки"
           value={from}
           onChange={(e) => setFrom(e.target.value)}
-          className="w-full p-2 rounded border border-gray-300"
+          className="w-full p-2 rounded border border-gray-300 text-red-700"
         />
         <input
           type="text"
           placeholder="Куди"
           value={to}
           onChange={(e) => setTo(e.target.value)}
-          className="w-full p-2 rounded border border-gray-300"
+          className="w-full p-2 rounded border border-gray-300 text-red-700"
         />
       </div>
 
       <div>
-        <label className="block font-medium">Транспорт</label>
+        <label className="block font-medium text-indigo-700">Транспорт</label>
         <select
           value={transport}
           onChange={(e) => setTransport(e.target.value)}
@@ -111,7 +128,7 @@ export default function RouteForm({
       <div className="space-y-4">
         {Object.keys(filters).map((key) => (
           <div key={key}>
-            <label className="block font-medium capitalize">{key}</label>
+            <label className="block font-medium text-indigo-700 capitalize">{key}</label>
             <input
               type="range"
               min={0}
@@ -127,7 +144,7 @@ export default function RouteForm({
       </div>
 
       <div>
-        <label className="block font-medium">Вільний час (хвилин)</label>
+        <label className="block font-medium text-indigo-700">Вільний час (хвилин)</label>
         <input
           type="number"
           min={30}

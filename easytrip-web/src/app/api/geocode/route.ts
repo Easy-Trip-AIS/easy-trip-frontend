@@ -22,12 +22,12 @@ export async function GET(req: NextRequest) {
     }
 
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
-    console.log("🌐 Запит до Google Maps URL:", url);
+    console.log("Запит до Google Maps URL:", url);
 
     const response = await fetch(url);
     const data = await response.json();
 
-    console.log("📦 Google Maps API response:", JSON.stringify(data, null, 2));
+    console.log("Google Maps API response:", JSON.stringify(data, null, 2));
 
     if (data.status !== "OK" || !data.results.length) {
       return NextResponse.json({
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
     const location = data.results[0].geometry.location;
     return NextResponse.json(location);
   } catch (error) {
-    console.error("🔥 Геокодування завершилось помилкою:", error);
+    console.error("Геокодування завершилось помилкою:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
