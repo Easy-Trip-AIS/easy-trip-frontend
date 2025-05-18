@@ -9,14 +9,27 @@ type Filters = {
   shopping: number;
   relaxation: number;
   spiritual: number;
-  entertainment: number; 
+  entertainment: number;
 };
 
-export default function RouteForm() {
+type Coordinates = {
+  lat: number;
+  lng: number;
+};
+
+type Payload = {
+  start_location: Coordinates;
+  end_location: Coordinates;
+  preferences: Record<string, number>;
+  transport: string;
+  free_time_minutes: number;
+};
+
+export default function RouteForm({ onSubmit }: { onSubmit: (payload: Payload) => void }) {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [transport, setTransport] = useState("car");
-  const [freeTime, setFreeTime] = useState(10); 
+  const [freeTime, setFreeTime] = useState(60);
   const [filters, setFilters] = useState<Filters>({
     culture: 50,
     nature: 50,
@@ -24,10 +37,10 @@ export default function RouteForm() {
     shopping: 50,
     relaxation: 50,
     spiritual: 50,
-    entertainment: 50, 
+    entertainment: 50,
   });
 
-  const geocodeAddress = async (address: string) => {
+  const geocodeAddress = async (address: string): Promise<Coordinates> => {
     const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
 
     const res = await fetch(url, {
@@ -61,7 +74,7 @@ export default function RouteForm() {
         Object.entries(filters).map(([key, value]) => [key, value / 100])
       );
 
-      const payload = {
+      const payload: Payload = {
         start_location,
         end_location,
         preferences,
@@ -69,26 +82,9 @@ export default function RouteForm() {
         free_time_minutes: freeTime,
       };
 
-      console.log(JSON.stringify(payload, null, 2));
-
-      const response = await fetch("/ml/recommend", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(`Помилка з боку сервера: ${text}`);
-      }
-
-      const result = await response.json();
-      console.log("Отримано маршрут:", result);
-      alert("Маршрут згенеровано успішно!");
+      onSubmit(payload);
     } catch (err) {
-      console.error("Помилка:", err);
+      console.error("Помилка при обробці форми:", err);
       alert("Не вдалося побудувати маршрут. Перевірте введення.");
     }
   };
@@ -120,7 +116,7 @@ export default function RouteForm() {
           className="w-full p-2 rounded border border-gray-300"
         >
           <option value="walk">Пішки</option>
-          <option value="bicycle">Велосипед</option>
+          <option value="bike">Велосипед</option>
           <option value="car">Авто</option>
         </select>
       </div>
@@ -142,8 +138,7 @@ export default function RouteForm() {
           </div>
         ))}
       </div>
-
-      <div>
+            <div>
         <label className="block font-medium text-indigo-700">Вільний час (хвилин)</label>
         <input
           type="number"

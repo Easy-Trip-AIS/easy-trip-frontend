@@ -20,9 +20,10 @@ export default function MapView({ directions, points }: MapViewProps) {
   const mapInstance = useRef<google.maps.Map | null>(null);
   const directionsRenderer = useRef<google.maps.DirectionsRenderer | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const markersRef = useRef<google.maps.Marker[]>([]);
 
   useEffect(() => {
-    loadGoogleMaps("AIzaSyBV8ddOK9JOJVK5gYmJRO128p9ZHCyZ4kc")
+    loadGoogleMaps(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!)
       .then(() => {
         console.log("✅ Google Maps API завантажено");
         setLoaded(true);
@@ -58,14 +59,20 @@ export default function MapView({ directions, points }: MapViewProps) {
   useEffect(() => {
     if (!loaded || !mapInstance.current || points.length === 0) return;
 
+    // Прибрати старі маркери
+    markersRef.current.forEach((marker) => marker.setMap(null));
+    markersRef.current = [];
+
     console.log("📌 Встановлення маркерів:", points);
 
-    points.forEach((point) => {
-      new google.maps.Marker({
+    points.forEach((point, index) => {
+      const marker = new google.maps.Marker({
         position: { lat: point.lat, lng: point.lng },
         map: mapInstance.current!,
-        title: point.name,
+        title: `${index === 0 ? "Початок: " : index === points.length - 1 ? "Кінець: " : ""}${point.name}`,
+        label: `${index + 1}`,
       });
+      markersRef.current.push(marker);
     });
   }, [loaded, points]);
 
