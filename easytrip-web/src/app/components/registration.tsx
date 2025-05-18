@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api";
 
@@ -90,177 +91,68 @@ export default function SignUpPage() {
 
   return (
     <div className="relative min-h-screen">
-      <div className="absolute inset-0 bg-gradient-to-br from-green-300 to-white z-0" />
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-white z-0" />
 
-      <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 p-8 gap-4 min-h-screen">
-        <div className="p-10 flex flex-col justify-between text-white h-full">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="relative z-10 grid grid-cols-1 md:grid-cols-2 p-8 gap-4 min-h-screen"
+      >
+        {/* LEFT PANEL */}
+        <motion.div
+          initial={{ opacity: 0, x: -40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+          className="p-10 flex flex-col justify-between text-white h-full"
+        >
           <div className="flex flex-col items-start justify-center h-full text-left">
-            <h2 className="text-6xl font-bold mb-4 text-black">
-              Plan inspiring walks
+            <h2 className="text-6xl font-bold mb-4 text-blue-900">
+              Плануйте надихаючі прогулянки
             </h2>
             <p className="text-xl text-gray-800 max-w-xl">
-              Find the best routes for walks through parks, squares,
-              embankments and other cozy places. Our service will help you pave
-              the way where every step is a pleasure.
+              Знайдіть найкращі маршрути для прогулянок парками, скверами, набережними та іншими затишними місцями.
+              Наш сервіс допоможе вам прокласти шлях, де кожен крок буде задоволенням.
             </p>
           </div>
           <div className="flex items-center justify-between mt-10">
             <div className="flex items-center gap-2">
-              <img
-                src="/english.png"
-                alt="US Flag"
-                className="w-6 h-6 rounded-full"
-              />
+              <img src="/english.png" alt="US Flag" className="w-6 h-6 rounded-full" />
               <span className="text-black font-medium">English</span>
-              <svg
-                className="w-4 h-4 text-gray-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M19 9l-7 7-7-7"
-                />
+              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
               </svg>
             </div>
             <div className="flex gap-4 text-sm">
-              <a
-                href="/"
-                className="text-black font-medium hover:underline"
-              >
-                Home
-              </a>
-              <a
-                href="#"
-                className="text-black font-medium hover:underline"
-              >
-                Terms
-              </a>
+              <a href="/" className="text-black font-medium hover:underline">Головна</a>
+              <a href="/terms" className="text-black font-medium hover:underline">Умови</a>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="bg-gray-100 rounded-xl shadow-lg w-full max-w-[700px] p-8 overflow-auto">
-          <h2 className="text-2xl font-bold mb-1">Create a new Account</h2>
-          <p className="text-sm text-gray-400 mb-6">
-            Please fill in your details
-          </p>
+        {/* RIGHT PANEL (Форма) */}
+        <motion.div
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+          className="bg-white rounded-xl shadow-lg w-full max-w-[700px] p-8 overflow-auto"
+        >
+          <h2 className="text-2xl font-bold mb-1 bg-gradient-to-r from-blue-600 to-cyan-400 bg-clip-text text-transparent">
+            Cтворіть новий акаунт
+          </h2>
+          <p className="text-sm text-gray-400 mb-6">Будь ласка, заповніть форму реєстрації</p>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex gap-4">
-              <div className="w-1/2">
-                <label className="block text-sm font-bold text-gray-700 mb-1">
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  name="firstname"
-                  value={formData.firstname}
-                  onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-lg"
-                  required
-                />
-              </div>
-              <div className="w-1/2">
-                <label className="block text-sm font-bold text-gray-700 mb-1">
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  name="lastname"
-                  value={formData.lastname}
-                  onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-lg"
-                  required
-                />
-              </div>
+              <InputField label="Ім'я" name="firstname" value={formData.firstname} onChange={handleChange} />
+              <InputField label="Прізвище" name="lastname" value={formData.lastname} onChange={handleChange} />
             </div>
 
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">
-                Date of Birth
-              </label>
-              <input
-                type="date"
-                name="dateOfBirth"
-                value={formData.dateOfBirth}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-lg"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">
-                Username
-              </label>
-              <input
-                type="text"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-lg"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-lg"
-                required
-              />
-              {errors.invalidEmail && (
-                <p className="text-sm text-red-500 mt-1">
-                  Please enter a valid email address.
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">
-                Password
-              </label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-lg"
-                required
-                minLength={8}
-              />
-              <p className="text-xs text-gray-400 mt-1">
-                At least 8 characters
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">
-                Repeat Password
-              </label>
-              <input
-                type="password"
-                name="passwordConfirmation"
-                value={formData.passwordConfirmation}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-lg"
-                required
-              />
-              {errors.passwordMismatch && (
-                <p className="text-sm text-red-500 mt-1">
-                  Passwords do not match.
-                </p>
-              )}
-            </div>
+            <InputField label="Дата народження" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} type="date" />
+            <InputField label="Логін" name="username" value={formData.username} onChange={handleChange} />
+            <InputField label="Електронна пошта" name="email" value={formData.email} onChange={handleChange} type="email" error={errors.invalidEmail && "Будь ласка, введіть корекнту електронну пошту."} />
+            <InputField label="Пароль" name="password" value={formData.password} onChange={handleChange} type="password" hint="Пароль повинен містити щонайменше 8 символів" />
+            <InputField label="Повторіть пароль" name="passwordConfirmation" value={formData.passwordConfirmation} onChange={handleChange} type="password" error={errors.passwordMismatch && "Паролі не співпадають, спробуйте ще раз"} />
 
             <div className="flex items-center">
               <input
@@ -273,44 +165,74 @@ export default function SignUpPage() {
                 required
               />
               <label htmlFor="acceptTerms" className="text-sm text-gray-700">
-                I accept the{" "}
-                <a href="/terms" className="text-green-600 hover:underline">
-                  Terms & Conditions
-                </a>
+                Я підтверджую{" "}
+                <a href="/terms" className="text-blue-600 hover:underline">Умови & Вимоги</a>
               </label>
             </div>
 
             {errors.server && (
               <div className="text-sm text-red-500">
-                {typeof errors.server === "string" ? (
-                  errors.server
-                ) : (
-                  Object.entries(errors.server).map(([field, msgs]) => (
-                    <p key={field}>
-                      {field}: {Array.isArray(msgs) ? msgs.join(" ") : msgs}
-                    </p>
-                  ))
-                )}
+                {typeof errors.server === "string"
+                  ? errors.server
+                  : Object.entries(errors.server).map(([field, msgs]) => (
+                      <p key={field}>
+                        {field}: {Array.isArray(msgs) ? msgs.join(" ") : msgs}
+                      </p>
+                    ))}
               </div>
             )}
 
-            <button
+            <motion.button
               type="submit"
               disabled={!formData.acceptTerms}
-              className="w-full bg-green-400 text-white py-2 rounded-lg font-semibold hover:bg-green-600 disabled:opacity-50"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="w-full bg-blue-400 text-white py-2 rounded-lg font-semibold hover:bg-blue-600 disabled:opacity-50"
             >
-              Sign Up
-            </button>
+              Зареєструватись
+            </motion.button>
 
-            <p className="text-sm text-center mt-4">
-              Already have an account?{" "}
-              <a href="/sign-in" className="text-green-600 hover:underline">
-                Sign In
-              </a>
+            <p className="text-sm text-gray-400 text-center mt-4">
+              Вже зареєстровані?{" "}
+              <a href="/sign-in" className="text-blue-600 hover:underline">Увійти</a>
             </p>
           </form>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
+    </div>
+  );
+}
+
+function InputField({
+  label,
+  name,
+  value,
+  onChange,
+  type = "text",
+  error,
+  hint,
+}: {
+  label: string;
+  name: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  type?: string;
+  error?: string | boolean;
+  hint?: string;
+}) {
+  return (
+    <div className="w-full">
+      <label className="block text-sm font-bold text-gray-700 mb-1">{label}</label>
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="w-full p-2 border border-gray-300 text-gray-800 rounded-lg"
+        required
+      />
+      {hint && <p className="text-xs text-gray-400 mt-1">{hint}</p>}
+      {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
     </div>
   );
 }
