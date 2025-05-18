@@ -3,6 +3,7 @@
 import { useState } from "react";
 import RouteForm from "../components/RouteForm";
 import MapView from "../components/MapView";
+import { motion } from "framer-motion";
 
 type Point = { name: string; lat: number; lng: number; description?: string };
 
@@ -126,3 +127,4 @@ export default function MapPage() {
     </div>
   );
 }
+
