@@ -119,7 +119,8 @@ export default function MapPage() {
   };
 
   return (
-    <div className="relative flex h-screen w-full p-4 gap-4">
+    <div className="relative flex h-screen w-full p-4 gap-4 absolute inset-0 bg-gradient-to-br from-blue-200 to-white z-0">
+      
       {/* Loader */}
       <AnimatePresence>
         {loading && (
