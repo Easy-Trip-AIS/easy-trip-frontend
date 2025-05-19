@@ -3,14 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import { loadGoogleMaps } from "../lib/loadGoogleMaps";
 
-type Point = {
+export type Point = {
   lat: number;
   lng: number;
   name: string;
   description?: string;
 };
 
-type MapViewProps = {
+export type MapViewProps = {
   directions: google.maps.DirectionsResult | null;
   points: Point[];
 };
@@ -24,18 +24,12 @@ export default function MapView({ directions, points }: MapViewProps) {
 
   useEffect(() => {
     loadGoogleMaps(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!)
-      .then(() => {
-        console.log("✅ Google Maps API завантажено");
-        setLoaded(true);
-      })
-      .catch((err) => {
-        console.error("❌ Помилка при завантаженні Google Maps API:", err);
-      });
+      .then(() => setLoaded(true))
+      .catch(console.error);
   }, []);
 
   useEffect(() => {
     if (!loaded || !mapRef.current) return;
-
     if (!mapInstance.current) {
       mapInstance.current = new google.maps.Map(mapRef.current, {
         zoom: 13,
@@ -44,37 +38,77 @@ export default function MapView({ directions, points }: MapViewProps) {
 
       directionsRenderer.current = new google.maps.DirectionsRenderer();
       directionsRenderer.current.setMap(mapInstance.current);
-
-      console.log("🗺️ Карта ініціалізована");
     }
   }, [loaded]);
 
   useEffect(() => {
     if (loaded && directionsRenderer.current && directions) {
       directionsRenderer.current.setDirections(directions);
-      console.log("📍 Маршрут оновлено");
     }
   }, [loaded, directions]);
 
   useEffect(() => {
     if (!loaded || !mapInstance.current || points.length === 0) return;
 
-    // Прибрати старі маркери
-    markersRef.current.forEach((marker) => marker.setMap(null));
+    markersRef.current.forEach((m) => m.setMap(null));
     markersRef.current = [];
 
-    console.log("📌 Встановлення маркерів:", points);
-
     points.forEach((point, index) => {
+      const color =
+        index === 0 ? "green" : index === points.length - 1 ? "red" : "orange";
+
       const marker = new google.maps.Marker({
         position: { lat: point.lat, lng: point.lng },
         map: mapInstance.current!,
-        title: `${index === 0 ? "Початок: " : index === points.length - 1 ? "Кінець: " : ""}${point.name}`,
+        title: `${point.name}\n${point.description ?? ""}`,
         label: `${index + 1}`,
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          fillColor: color,
+          fillOpacity: 1,
+          strokeWeight: 1,
+          strokeColor: "white",
+          scale: 8,
+        },
       });
+
+      const info = new google.maps.InfoWindow({
+        content: `<strong>${point.name}</strong><br/>${point.description ?? ""}`,
+      });
+
+      marker.addListener("click", () => info.open(mapInstance.current!, marker));
+
       markersRef.current.push(marker);
     });
   }, [loaded, points]);
 
-  return <div ref={mapRef} className="w-full h-full" />;
+  const handleFocusPoint = (point: Point) => {
+    if (mapInstance.current) {
+      mapInstance.current.panTo({ lat: point.lat, lng: point.lng });
+      mapInstance.current.setZoom(15);
+    }
+  };
+
+  return (
+    <div className="relative w-full h-full">
+      <div ref={mapRef} className="absolute inset-0" />
+
+      {/* Список точок */}
+      <div className="absolute left-4 bottom-4 z-10 bg-white/90 backdrop-blur-lg p-4 rounded-lg shadow-lg max-w-xs overflow-auto max-h-[50vh]">
+        <h3 className="text-lg font-semibold mb-2 text-indigo-700">Маршрут</h3>
+        <ul className="space-y-2 text-sm">
+          {points.map((p, i) => (
+            <li
+              key={i}
+              className="border-b pb-1 cursor-pointer hover:bg-indigo-50 rounded px-1"
+              onClick={() => handleFocusPoint(p)}
+            >
+              <span className="font-medium text-gray-800">{i + 1}. {p.name}</span>
+              {p.description && <p className="text-gray-500">{p.description}</p>}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
 }
